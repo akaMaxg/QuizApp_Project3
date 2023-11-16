@@ -10,11 +10,16 @@ The program revolves around a few primary objects *Quiz*, *Question*, *Answer*, 
 Through the use of various API endpoints a user can interact with the webapplication and database to create, view and take various quizzes. 
 
 ### Additional functionality
--> Used *Entity Framework*
--> Route to specific quiz
--> Quiz-attempts can be done through links
--> History of attemped quiz with score 
--> List of own quiz
+-> Used *Entity Framework*  
+
+-> Route to specific quiz  
+
+-> Quiz-attempts can be done through links  
+
+-> History of attemped quiz with score   
+
+-> List of own quiz  
+
 -> Optional amount of questions for a quiz with title
  
 ## To run program
