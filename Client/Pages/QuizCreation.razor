@@ -1,0 +1,165 @@
+﻿@page "/QuizPage"
+@using QuizApp_Project3.Shared.ViewModels;
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using System.Net.Http.Json
+@using System.Security.Claims
+@attribute [Authorize]
+@inject HttpClient Http
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+<div class="container mt-3">
+    <h1>Quiz Page</h1>
+    <h3>@message</h3>
+    <h2>@questionMessage</h2>
+
+    <div class="row mt-4">
+        <!-- Form to create Quiz -->
+        <div class="col-md-6">
+            <h4>Create Quiz</h4>
+            <div><br /></div>
+            <EditForm Model="newQuiz" OnValidSubmit="HandleValidQuizSubmit">
+                <DataAnnotationsValidator />
+                <div class="form-group">
+                    <label>1. Enter Quiz title and submit:</label>
+                    <InputText @bind-Value="newQuiz.Title" class="form-control" placeholder="Quiz title" />
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </EditForm>
+        </div>
+
+        <!-- Form to create Questions -->
+        <div class="col-md-6">
+            <br />
+            <br />
+            <EditForm Model="newQuestion" OnValidSubmit="HandleValidQuestionSubmit">
+                <DataAnnotationsValidator />
+                <div class="form-group">
+                    <label>2. Enter one Question and submit per group of answers:</label>
+                    <InputText @bind-Value="newQuestion.Content" class="form-control" placeholder="Question goes here" />
+                    <InputText @bind-Value="newQuestion.MediaLink" class="form-control" placeholder="Enter link to image or video" />
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </EditForm>
+        </div>
+    </div>
+
+    <!-- Form to create Answers -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <EditForm Model="newAnswer" OnValidSubmit="HandleSingleAnswerSubmit">
+                <DataAnnotationsValidator />
+                <div class="form-group">
+                    <label>3. Enter each possible answer for question and mark if true or not, then repeat step 2->3</label>
+                    <InputText @bind-Value="newAnswer.Content" class="form-control" placeholder="Enter answer here" />
+                    <InputCheckbox @bind-Value="newAnswer.IsCorrect" />
+                    <label class="ml-2">True</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Answer</button>   <button @onclick="HandleAnswerSubmit" class="btn btn-success">Post group of Answers</button>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    //Messages
+    private string message = "No calls made";
+    private string questionMessage = "";
+    private string quizList = "";
+
+    //Initiatlized models
+    public QuizViewModel newQuiz = new QuizViewModel {};
+    private List<QuizViewModel> listQuiz = new List<QuizViewModel> { };
+    private QuestionViewModel newQuestion = new QuestionViewModel {};
+    private List<AnswerViewModel> newAnswers = new List<AnswerViewModel> {};
+    private AnswerViewModel newAnswer = new AnswerViewModel {};
+}
+
+ @*Quizzes*@
+
+@code {
+    private async Task<QuizViewModel> CreateQuiz(QuizViewModel newQuiz)
+    {
+        var response = await Http.PostAsJsonAsync("/quiz/createquiz", newQuiz);
+        Console.WriteLine("Post JSON sent");
+        if (response.IsSuccessStatusCode)
+        {
+            message = "Quiz created";
+            var returnedQuiz = await response.Content.ReadFromJsonAsync<QuizViewModel>();
+            return returnedQuiz;
+        }
+        else
+        {
+            message = "Could not create quiz";
+            return null;
+        }
+    }
+    private async Task HandleValidQuizSubmit()
+    {
+        var returnedQuiz = await CreateQuiz(newQuiz);
+        newQuiz.Id = returnedQuiz.Id;
+        StateHasChanged();
+    }
+}
+
+ @*Questions*@
+@code {
+    private async Task<QuestionViewModel> CreateQuestions(QuestionViewModel newQuestion)
+    {
+        var response = await Http.PostAsJsonAsync("/quiz/createquestion", newQuestion);
+        if (response.IsSuccessStatusCode)
+        {
+            message = "Question created";
+            var returnedQuestion = await response.Content.ReadFromJsonAsync<QuestionViewModel>();
+            newAnswers.Clear();
+
+            return returnedQuestion;
+        }
+        else
+        {
+            message = "Could not create Question";
+            return null;
+        }
+    }
+    private async Task HandleValidQuestionSubmit()
+    {
+        newQuestion.QuizId = newQuiz.Id;
+        var returnedQuestions = await CreateQuestions(newQuestion);
+        newQuestion.Id = returnedQuestions.Id;
+    }
+}
+
+@*Answers*@
+@code {
+    public async Task<List<AnswerViewModel>> CreateAnswers(List<AnswerViewModel> answerList)
+    {
+        var response = await Http.PostAsJsonAsync("/quiz/createanswer", answerList);
+        Console.WriteLine("Post JSON sent");
+        if (response.IsSuccessStatusCode)
+        {
+            message = "Answer created";
+            var returnedAnswer = await response.Content.ReadFromJsonAsync<List<AnswerViewModel>>();
+            return returnedAnswer;
+        }
+        else
+        {
+            message = "Could not create Answer";
+            return null;
+        }
+    }
+    private async Task HandleSingleAnswerSubmit()
+    {
+        newAnswer.QuestionId = newQuestion.Id;
+        newAnswer.IsSelected = false;
+
+        newAnswers.Add(newAnswer);
+        newAnswer = new AnswerViewModel();
+    }
+    private async Task HandleAnswerSubmit()
+    {
+        var returnedAnswer = await CreateAnswers(newAnswers);
+        newQuestion = new QuestionViewModel();
+    }
+}

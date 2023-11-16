@@ -1,0 +1,161 @@
+﻿@page "/quiz/page/{quizTitle}"
+
+@using QuizApp_Project3.Client.Components
+@using QuizApp_Project3.Shared.ViewModels
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<div class="container mt-3">
+    <h3>Quiz Page</h3>
+
+    @if (userScore > 0)
+    {
+        <GameCreation QuizId="@quizz.Id" Score="@userScore" />
+    }
+
+    @if (quizz != null)
+    {
+        <div class="mt-4">
+            <h4>Title: @quizz.Title</h4>
+            <p>Created: @quizz.Created.ToString("MM/dd, HH:mm")</p>
+            <p>Number of Attempts: @quizz.NumberOfAttempts</p>
+            <p>Max Score: @quizz.Score</p>
+
+            <h4>Questions:</h4>
+
+            <form>
+                @foreach (var question in quizz.Questions)
+                {
+                    <div class="mb-4">
+                        <h5 class="mb-3">- @question.Content</h5>
+                        @if (!string.IsNullOrEmpty(question.MediaLink))
+                        {
+                            @if (IsVideoLink(question.MediaLink))
+                            {
+                                <video controls class="img-fluid">
+                                    <source src="@question.MediaLink" type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                </video>
+                            }
+                            else if (IsImageLink(question.MediaLink))
+                            {
+                                <img src="@question.MediaLink" alt="Image" class="img-fluid" />
+                            }
+                            else
+                            {
+                                <p class="text-danger">Unsupported media type.</p>
+                            }
+                        }
+
+                        <h6>Answers:</h6>
+
+                        @foreach (var answer in question.Answers)
+                        {
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" @bind="answer.IsSelected" />
+                                <label class="form-check-label">@answer.Content</label>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <button type="button" class="btn btn-primary" @onclick="CheckAnswers">Submit</button>
+            </form>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(scoreMessage))
+    {
+        <div class="mt-4">
+            <p>@scoreMessage</p>
+        </div>
+    }
+</div>
+
+@if (!string.IsNullOrEmpty(scoreMessage))
+{
+    <div class="mt-4">
+        <p>@scoreMessage</p>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string? quizTitle { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        quizz = await GetQuiz(quizTitle);
+    }
+}
+
+@code {
+    private QuizViewModel quizz;
+    private int userScore = 0;
+    private string scoreMessage;
+
+    private async Task<QuizViewModel> GetQuiz(string quizTitle)
+    {
+        var response = await Http.GetAsync($"/quiz/getquiz/{quizTitle}");
+        if (response.IsSuccessStatusCode)
+        {
+            var quiz = await response.Content.ReadFromJsonAsync<QuizViewModel>();
+            return quiz;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    private void CheckAnswers()
+    {
+        userScore = 0;
+
+        foreach (var question in quizz.Questions)
+        {
+            foreach (var answer in question.Answers)
+            {
+                // Check if the answer is selected and is marked as correct
+                if (answer.IsCorrect && answer.IsSelected)
+                {
+                    // Increment the user's score
+                    userScore++;
+                }
+            }
+        }
+        // Display the user's score
+        scoreMessage = $"Your score: {userScore}/{quizz.Score}";
+    }
+}
+
+@code {
+    private bool IsVideoLink(string link)
+    {
+        string[] videoExtensions = { ".mp4", ".webm", ".ogg" };
+
+        foreach (var extension in videoExtensions)
+        {
+            if (link.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    private bool IsImageLink(string link)
+    {
+        string[] imageExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
+
+        foreach (var extension in imageExtensions)
+        {
+            if (link.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+}

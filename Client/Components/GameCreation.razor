@@ -1,0 +1,59 @@
+﻿@using QuizApp_Project3.Shared.ViewModels;
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using System.Net.Http.Json
+@using System.Security.Claims
+@inject HttpClient Http
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h3>Quiz attempt saved!</h3>
+
+
+@code {
+    [Parameter]
+    public int QuizId { get; set; }
+
+    [Parameter]
+    public int Score { get; set; }
+
+    public GameQuizViewModel newEntry;
+
+    [CascadingParameter]
+    public Task<AuthenticationState>? authState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        var user = authstate.User;
+        var name = user.Identity.Name;
+
+      newEntry = new GameQuizViewModel
+
+         {
+             Score = Score,
+             QuizId = QuizId,
+             AttemptedBy = name
+         };
+        await HandleCreation();
+    }
+
+    private async Task<GameQuizViewModel> CreateGameEntry(GameQuizViewModel newEntry)
+    {
+        var response = await Http.PostAsJsonAsync("/quiz/gamequiz", newEntry);
+        if (response.IsSuccessStatusCode)
+        {
+            var gameQuizEntry = await response.Content.ReadFromJsonAsync<GameQuizViewModel>();
+            return gameQuizEntry;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    private async Task HandleCreation()
+    {
+        var returnedgameQuizEntry = await CreateGameEntry(newEntry);
+        StateHasChanged();
+    }
+}

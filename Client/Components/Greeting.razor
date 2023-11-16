@@ -1,0 +1,19 @@
+﻿
+@code {
+    [CascadingParameter]
+    public Task<AuthenticationState>? authState { get; set; }
+}
+
+@{
+    var user = authState?.Result.User;
+
+}
+
+@if (user?.Identity?.IsAuthenticated ?? false)
+{
+    <h1>Welcome @user.Identity.Name!</h1>
+
+} else
+{
+    <h1>Greetings stranger</h1>
+}

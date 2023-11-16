@@ -1,0 +1,51 @@
+﻿@using QuizApp_Project3.Shared.ViewModels;
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using System.Net.Http.Json
+@using System.Security.Claims
+@inject HttpClient Http
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="container mt-3">
+    <h3>Attempts</h3>
+
+    @if (listQuiz != null && listQuiz.Any())
+    {
+        <div class="list-group">
+            @foreach (var quiz in listQuiz)
+            {
+                <div class="list-group-item list-group-item-action">
+                    <h5 class="mb-1">Title: @quiz.QuizName</h5>
+                    <p class="mb-1">Attempted by: @quiz.AttemptedBy</p>
+                    <p class="mb-1">Score: @quiz.Score</p>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p>No attempts found.</p>
+    }
+</div>
+
+@code {
+    private List<GameQuizViewModel> listQuiz;
+    protected override async Task OnInitializedAsync()
+    {
+        listQuiz = await GetQuizzes();
+    }
+        
+    private async Task<List<GameQuizViewModel>> GetQuizzes()
+        {
+        var response = await Http.GetAsync($"/quiz/myquiz");
+            if (response.IsSuccessStatusCode)
+            {
+            var listEntrys = await response.Content.ReadFromJsonAsync<List<GameQuizViewModel>>();
+            return listEntrys;
+            }
+            else
+            {
+                return null;
+            }
+        }
+}
