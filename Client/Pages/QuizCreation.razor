@@ -14,7 +14,7 @@
     <h2>@questionMessage</h2>
 
     <div class="row mt-4">
-        <!-- Form to create Quiz -->
+    @*Form to create Quiz *@
         <div class="">
             <div><br /></div>
             <EditForm Model="newQuiz" OnValidSubmit="HandleValidQuizSubmit">
@@ -27,7 +27,7 @@
             </EditForm>
         </div>
 
-        <!-- Form to create Questions -->
+        @*Form to create Question *@
         <div class="mt-4">
             <br />
             <br />
@@ -43,7 +43,7 @@
         </div>
     </div>
 
-    <!-- Form to create Answers -->
+    @*Form to create Answers *@
     <div class="row mt-4">
         <div class="">
             <EditForm Model="newAnswer" OnValidSubmit="HandleSingleAnswerSubmit">
@@ -78,7 +78,7 @@
     private AnswerViewModel newAnswer = new AnswerViewModel {};
 }
 
- @*Quizzes*@
+ @*Quizcreation*@
 
 @code {
     private async Task<QuizViewModel> CreateQuiz(QuizViewModel newQuiz)

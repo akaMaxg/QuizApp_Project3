@@ -13,7 +13,6 @@ namespace QuizApp_Project3.Server.Models
 
         public int Score { get; set; } = 0;
 
-        //Nav to user
         [ForeignKey("User")]
         public string? UserId { get; set; }
         public virtual ApplicationUser? User { get; set; }
