@@ -32,5 +32,10 @@ Through the use of various API endpoints a user can interact with the webapplica
 ## Usage
 Log-in and navigate the page
 
+## Shortcomings  
+The application is lacking on certain aspects that did not appear to be primary focus of the assignment but is generally good practice
+- Exception handling
+- Input and form-validations
+
 ## Contribution  
 If you would like to contribute to this project, please feel free to submit a pull request on the Git repository.
