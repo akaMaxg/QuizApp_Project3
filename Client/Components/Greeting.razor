@@ -9,6 +9,7 @@
 
 }
 
+<div class="container mt-4">
 @if (user?.Identity?.IsAuthenticated ?? false)
 {
     <h1>Welcome @user.Identity.Name!</h1>
@@ -17,3 +18,4 @@
 {
     <h1>Greetings stranger</h1>
 }
+</div>

@@ -9,19 +9,24 @@
 
 <div class="container mt-3">
     <h3>Quiz Page</h3>
+    @if (!string.IsNullOrEmpty(scoreMessage))
+    {
+        <div class="mt-4">
+            <h5>@scoreMessage</h5>
+        </div>
+    }
 
     @if (userScore > 0)
     {
         <GameCreation QuizId="@quizz.Id" Score="@userScore" />
     }
 
+
     @if (quizz != null)
     {
         <div class="mt-4">
             <h4>Title: @quizz.Title</h4>
             <p>Created: @quizz.Created.ToString("MM/dd, HH:mm")</p>
-            <p>Number of Attempts: @quizz.NumberOfAttempts</p>
-            <p>Max Score: @quizz.Score</p>
 
             <h4>Questions:</h4>
 
@@ -60,26 +65,12 @@
                         }
                     </div>
                 }
-
                 <button type="button" class="btn btn-primary" @onclick="CheckAnswers">Submit</button>
             </form>
         </div>
     }
-
-    @if (!string.IsNullOrEmpty(scoreMessage))
-    {
-        <div class="mt-4">
-            <p>@scoreMessage</p>
-        </div>
-    }
 </div>
 
-@if (!string.IsNullOrEmpty(scoreMessage))
-{
-    <div class="mt-4">
-        <p>@scoreMessage</p>
-    </div>
-}
 
 @code {
     [Parameter]
@@ -93,6 +84,7 @@
 @code {
     private QuizViewModel quizz;
     private int userScore = 0;
+
     private string scoreMessage;
 
     private async Task<QuizViewModel> GetQuiz(string quizTitle)

@@ -56,7 +56,6 @@ namespace QuizApp_Project3.Server.Controllers
         [HttpPost("createquestion")]
         public async Task<ActionResult<QuestionViewModel>> CreateQuestions([FromBody] QuestionViewModel questions)
         {
-
             var newQuestion = new Question
             {
                 Content = questions.Content,
@@ -65,7 +64,6 @@ namespace QuizApp_Project3.Server.Controllers
             };
             _context.Questions.Add(newQuestion);
             await _context.SaveChangesAsync();
-            IncrementQuizScore(questions.QuizId);
             return Ok(newQuestion);
         }
 
@@ -107,7 +105,6 @@ namespace QuizApp_Project3.Server.Controllers
             }
             _context.Answers.AddRange(answers);
             await _context.SaveChangesAsync();
-
             return Ok(answers);
         }
 
@@ -126,7 +123,7 @@ namespace QuizApp_Project3.Server.Controllers
                         Title = q.Title,
                         Created = q.Created,
                         NumberOfAttempts = q.NumberOfAttempts,
-                        Score = q.Score,
+                        Score = _context.Questions.Count(gq => gq.QuizId == q.Id),
 
                     })
                         .ToListAsync();
@@ -202,7 +199,7 @@ namespace QuizApp_Project3.Server.Controllers
                 Created = quiz.Created,
                 NumberOfAttempts = quiz.NumberOfAttempts,
                 Questions = questionsView,
-                Score = quiz.Score
+                Score = _context.Questions.Count(gq => gq.QuizId == quiz.Id)
             };
             IncrementAttempt(quiz.Id);
             return quizViewModel;

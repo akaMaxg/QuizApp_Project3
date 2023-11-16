@@ -1,4 +1,4 @@
-﻿@using QuizApp_Project3.Shared.ViewModels;
+﻿@using QuizApp_Project3.Shared.ViewModels
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using System.Net.Http.Json
@@ -6,33 +6,41 @@
 @inject HttpClient Http
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
+<div class="container mt-3">
 
-<h3>Quizpage</h3>
-@foreach (var quiz in listQuiz)
-{
-    <div class="quiz-item">
-        <h3>@quiz.Title</h3>
-        <p>Created: @quiz.Created.ToString("MM/dd, HH:mm")</p>
-        <p>Number of Attempts: @quiz.NumberOfAttempts</p>
-        <p>Score: @quiz.Score</p>
-    </div>
-}
+    @if (listQuiz != null && listQuiz.Any())
+    {
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Created</th>
+                    <th>Number of Attempts</th>
+                    <th>Max Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var quiz in listQuiz)
+                {
+                    <tr>
+                        <td>@quiz.Title</td>
+                        <td>@quiz.Created.ToString("MM/dd, HH:mm")</td>
+                        <td>@quiz.NumberOfAttempts</td>
+                        <td>@quiz.Score</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 
-<button @onclick=" HandleUserData">Get quizzes</button>
 
+    <button class="btn btn-primary" @onclick="HandleUserData">Get my quizzes</button>
+</div>
 
 @code {
-    //Messages
-    private string message = "No calls made";
-    private string questionMessage = "";
-
-    //Initiatlized models
     private List<QuizViewModel> listQuiz = new List<QuizViewModel> { };
 
-}
 
- @*User*@
-@code {
     private async Task<List<QuizViewModel>> GetUserData()
     {
         var response = await Http.GetAsync("/quiz/userquiz");
@@ -46,6 +54,7 @@
             return null;
         }
     }
+
     private async Task HandleUserData()
     {
         var quizzes = await GetUserData();
